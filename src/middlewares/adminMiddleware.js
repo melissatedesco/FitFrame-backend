@@ -1,11 +1,6 @@
-module.exports = (req, res, next) => {
-    // req.user viene riempito dal middleware 'protect' che abbiamo fatto prima
+export default (req, res, next) => {
     if (!req.user || req.user.role !== 'admin') {
-        return res.status(403).json({ 
-            message: "Accesso negato. Questa operazione è riservata agli amministratori. 🚫" 
-        });
+        return res.status(403).json({ message: "Accesso negato. Riservato agli amministratori." })
     }
-    
-    // Se è un admin, la catena di montaggio continua
-    next();
-};
+    next()
+}
