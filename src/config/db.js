@@ -1,8 +1,8 @@
-const mysql = require('mysql2')
-require('dotenv').config()
+import { createPool } from 'mysql2'
+import 'dotenv/config'
 
-// crea un pool di connessioni usando le variabli del file .env
-const pool = mysql.createPool({
+// crea un pool di connessioni usando le variabili del file .env
+const pool = createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -15,15 +15,14 @@ const pool = mysql.createPool({
 // esporta il pool convertito in "promises" per poter usare async/await nel codice
 const promisePool = pool.promise()
 
-// testiamo subito la connessione all'avvio
+// testa la connessione all'avvio
 pool.getConnection((err, connection) => {
-    if(err) {
-        console.error(" Errore di connessione al database MySQL:", err.message);
+    if (err) {
+        console.error("Errore di connessione al database MySQL:", err.message)
     } else {
-        console.log("Connessione al database MySQL avvenuta con successo");
-        // rilascia la connessione nel pool
-        connection.release(); 
+        console.log("Connessione al database MySQL avvenuta con successo")
+        connection.release()
     }
 })
 
-module.exports = promisePool
+export default promisePool

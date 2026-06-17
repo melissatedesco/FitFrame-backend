@@ -1,11 +1,28 @@
-const express = require('express');
+import express from 'express';
+import protect from '../middlewares/authMiddleware.js';
+import { register, login, logout } from '../controllers/authController.js';
+import { validate, rules } from '../middlewares/validate.js';
+
 const router = express.Router();
-const authController = require('../controllers/authController');
 
-// POST /api/auth/register
-router.post('/register', authController.register);
+router.post('/register',
+    validate([
+        rules.required('name', 'Nome'),
+        rules.required('surname', 'Cognome'),
+        rules.email(),
+        rules.minLength('password', 6, 'Password')
+    ]),
+    register
+);
 
-// POST /api/auth/login
-router.post('/login', authController.login);
+router.post('/login',
+    validate([
+        rules.email(),
+        rules.required('password', 'Password')
+    ]),
+    login
+);
 
-module.exports = router;
+router.post('/logout', protect, logout);
+
+export default router;
