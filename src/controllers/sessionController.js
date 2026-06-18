@@ -75,3 +75,13 @@ export const getMyStats = async (req, res, next) => {
         next(error)
     }
 }
+
+// GET /api/sessions/exercises/:exerciseId/history — trend esercizio nel tempo (RF-P5)
+export const getExerciseHistory = async (req, res, next) => {
+    try {
+        const history = await Session.getExerciseHistory(req.user.id, req.params.exerciseId)
+        res.json(history)
+    } catch (error) {
+        next(error)
+    }
+}

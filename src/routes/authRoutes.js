@@ -2,6 +2,7 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import protect from '../middlewares/authMiddleware.js';
 import { register, login, refresh, logout } from '../controllers/authController.js';
+import { forgotPassword, resetPassword } from '../controllers/passwordResetController.js';
 import { validate, rules } from '../middlewares/validate.js';
 
 const router = express.Router();
@@ -40,5 +41,9 @@ router.post('/refresh', refresh);
 
 // il logout non richiede protect: il refresh token nel body è sufficiente per identificare la sessione
 router.post('/logout', logout);
+
+// reset password via email (RF-A5)
+router.post('/forgot-password', authLimiter, forgotPassword);
+router.post('/reset-password', authLimiter, resetPassword);
 
 export default router;

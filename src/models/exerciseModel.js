@@ -51,10 +51,18 @@ const Exercise = {
         return rows
     },
 
+    // verifica proprietà esercizio (trainer può modificare solo i propri)
+    isOwner: async (exerciseId, userId) => {
+        const [[row]] = await db.execute(
+            'SELECT created_by FROM exercises WHERE id = ?', [exerciseId]
+        )
+        return row?.created_by === userId
+    },
+
     // dettaglio esercizio con lista attrezzi richiesti (RF-E3, RF-E4)
     findById: async (id) => {
         const [[exercise]] = await db.execute(
-            `SELECT id, name, description, muscle_group, difficulty, media_url, angle_rules
+            `SELECT id, name, description, muscle_group, difficulty, media_url, angle_rules, created_by
              FROM exercises WHERE id = ?`,
             [id]
         )
@@ -71,12 +79,12 @@ const Exercise = {
         return { ...exercise, equipment: equipmentRows }
     },
 
-    create: async ({ name, description, muscle_group, difficulty, media_url, angle_rules }) => {
+    create: async ({ name, description, muscle_group, difficulty, media_url, angle_rules, created_by }) => {
         const [result] = await db.execute(
-            `INSERT INTO exercises (name, description, muscle_group, difficulty, media_url, angle_rules)
-             VALUES (?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO exercises (name, description, muscle_group, difficulty, media_url, angle_rules, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [name, description ?? null, muscle_group, difficulty, media_url ?? null,
-             angle_rules ? JSON.stringify(angle_rules) : null]
+             angle_rules ? JSON.stringify(angle_rules) : null, created_by ?? null]
         )
         return result.insertId
     },

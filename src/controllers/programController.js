@@ -1,9 +1,11 @@
 import Program from '../models/programModel.js'
 
 // GET /api/programs — schede di sistema + proprie (RF-S1, S2)
+// ?my_equipment=true → mostra solo schede compatibili con gli attrezzi dell'utente (UC-3)
 export const getAllPrograms = async (req, res, next) => {
     try {
-        const programs = await Program.getAll(req.user.id)
+        const filterByEquipment = req.query.my_equipment === 'true'
+        const programs = await Program.getAll(req.user.id, filterByEquipment)
         res.json(programs)
     } catch (error) {
         next(error)
@@ -123,6 +125,24 @@ export const removeExercise = async (req, res, next) => {
             return res.status(404).json({ message: 'Esercizio non trovato nella scheda.' })
         }
         res.json({ message: 'Esercizio rimosso dalla scheda.' })
+    } catch (error) {
+        next(error)
+    }
+}
+
+// PUT /api/programs/:id/exercises/reorder — riordina in blocco (RF-S3)
+export const reorderExercises = async (req, res, next) => {
+    const { items } = req.body
+    if (!Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ message: 'items deve essere un array non vuoto di {id, position}.' })
+    }
+    try {
+        const isOwner = await Program.isOwner(req.params.id, req.user.id)
+        if (!isOwner && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Non puoi modificare questa scheda.' })
+        }
+        await Program.reorderExercises(req.params.id, items)
+        res.json({ message: 'Ordine aggiornato.' })
     } catch (error) {
         next(error)
     }

@@ -1,6 +1,6 @@
 import express from 'express'
 import protect from '../middlewares/authMiddleware.js'
-import admin from '../middlewares/adminMiddleware.js'
+import staff from '../middlewares/staffMiddleware.js'
 import { validate, rules } from '../middlewares/validate.js'
 import {
     getAllExercises, getExerciseById,
@@ -20,13 +20,13 @@ const exerciseValidation = validate([
 router.get('/', protect, getAllExercises)
 router.get('/:id', protect, getExerciseById)
 
-// rotte solo admin
-router.post('/', protect, admin, exerciseValidation, createExercise)
-router.put('/:id', protect, admin, exerciseValidation, updateExercise)
-router.delete('/:id', protect, admin, deleteExercise)
+// rotte admin + trainer (con ownership check nel controller per i trainer)
+router.post('/', protect, staff, exerciseValidation, createExercise)
+router.put('/:id', protect, staff, exerciseValidation, updateExercise)
+router.delete('/:id', protect, staff, deleteExercise)
 
 // gestione attrezzi collegati a un esercizio
-router.post('/:id/equipment/:equipmentId', protect, admin, addEquipmentToExercise)
-router.delete('/:id/equipment/:equipmentId', protect, admin, removeEquipmentFromExercise)
+router.post('/:id/equipment/:equipmentId', protect, staff, addEquipmentToExercise)
+router.delete('/:id/equipment/:equipmentId', protect, staff, removeEquipmentFromExercise)
 
 export default router

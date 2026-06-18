@@ -92,8 +92,15 @@ export const refresh = async (req, res, next) => {
             return res.status(401).json({ message: 'Utente non trovato.' })
         }
 
+        // rotazione: elimina il vecchio refresh token e ne emette uno nuovo
+        await RefreshToken.delete(refreshToken)
+        const newRefreshToken = generateRefreshToken(user)
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+            .toISOString().slice(0, 19).replace('T', ' ')
+        await RefreshToken.save(user.id, newRefreshToken, expiresAt)
+
         const newAccessToken = generateAccessToken(user)
-        res.json({ accessToken: newAccessToken })
+        res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken })
     } catch (error) {
         if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
             return res.status(401).json({ message: 'Refresh token non valido o scaduto.' })

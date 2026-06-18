@@ -68,6 +68,25 @@ const Session = {
         return result.insertId
     },
 
+    // trend di un esercizio nel tempo per l'utente (RF-P5)
+    getExerciseHistory: async (userId, exerciseId) => {
+        const [rows] = await db.execute(
+            `SELECT
+                s.started_at AS date,
+                se.sets_done,
+                se.reps_done,
+                se.form_score,
+                e.name AS exercise_name
+             FROM session_exercises se
+             JOIN sessions s ON se.session_id = s.id
+             JOIN exercises e ON se.exercise_id = e.id
+             WHERE s.user_id = ? AND se.exercise_id = ?
+             ORDER BY s.started_at ASC`,
+            [userId, exerciseId]
+        )
+        return rows
+    },
+
     // statistiche aggregate dell'utente (RF-P4)
     getStats: async (userId) => {
         const [[totals]] = await db.execute(

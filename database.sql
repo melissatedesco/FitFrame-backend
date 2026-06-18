@@ -51,7 +51,9 @@ CREATE TABLE IF NOT EXISTS exercises (
     difficulty ENUM('principiante', 'intermedio', 'avanzato') NOT NULL,
     media_url VARCHAR(500),
     angle_rules JSON,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_by INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- Relazione esercizio ↔ attrezzo (RF-E2, RF-T3)
@@ -109,4 +111,15 @@ CREATE TABLE IF NOT EXISTS session_exercises (
     form_score TINYINT UNSIGNED,          -- 0-100, qualità forma rilevata dal coach
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
     FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
+);
+
+-- Token per il reset della password (RF-A5)
+CREATE TABLE IF NOT EXISTS password_resets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(128) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    used TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
