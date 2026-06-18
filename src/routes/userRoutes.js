@@ -2,9 +2,16 @@ import express from 'express'
 import protect from '../middlewares/authMiddleware.js'
 import admin from '../middlewares/adminMiddleware.js'
 import { getAllUsers, getUserProfile, updateUser, deleteUser } from '../controllers/userController.js'
+import { getMyEquipment, addMyEquipment, removeMyEquipment, replaceMyEquipment } from '../controllers/userEquipmentController.js'
 import { validate, rules } from '../middlewares/validate.js'
 
 const router = express.Router()
+
+// rotte attrezzi posseduti dall'utente (RF-T2) — devono stare prima di /:id
+router.get('/me/equipment', protect, getMyEquipment)
+router.post('/me/equipment/:equipmentId', protect, addMyEquipment)
+router.put('/me/equipment', protect, replaceMyEquipment)
+router.delete('/me/equipment/:equipmentId', protect, removeMyEquipment)
 
 // GET /api/users — solo admin
 router.get('/', protect, admin, getAllUsers)

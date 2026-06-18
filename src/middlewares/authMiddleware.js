@@ -11,6 +11,7 @@ export default (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super_secret_key_per_i_token_jwt')
+        // nota: questo middleware verifica solo l'access token (15min), non il refresh token
         req.user = decoded
         next()
     } catch (error) {

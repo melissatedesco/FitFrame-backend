@@ -1,17 +1,15 @@
 import Equipment from '../models/equipmentModel.js'
 
-// visualizza tutti gli attrezzi
-export const getAllEquipment = async (req, res) => {
+export const getAllEquipment = async (req, res, next) => {
     try {
         const list = await Equipment.getAll()
         res.json(list)
     } catch (error) {
-        res.status(500).json({ message: "Errore nel recupero degli attrezzi", error: error.message })
+        next(error)
     }
 }
 
-// visualizza attrezzo per id
-export const getEquipmentById = async (req, res) => {
+export const getEquipmentById = async (req, res, next) => {
     try {
         const item = await Equipment.findById(req.params.id)
         if (!item) {
@@ -19,23 +17,21 @@ export const getEquipmentById = async (req, res) => {
         }
         res.json(item)
     } catch (error) {
-        res.status(500).json({ message: "Errore nel recupero attrezzo", error: error.message })
+        next(error)
     }
 }
 
-// crea attrezzo
-export const createEquipment = async (req, res) => {
+export const createEquipment = async (req, res, next) => {
     const { name, category } = req.body
     try {
         const newId = await Equipment.create(name, category)
         res.status(201).json({ message: "Attrezzo aggiunto al catalogo", id: newId })
     } catch (error) {
-        res.status(500).json({ message: "Errore durante la creazione", error: error.message })
+        next(error)
     }
 }
 
-// modifica attrezzo
-export const updateEquipment = async (req, res) => {
+export const updateEquipment = async (req, res, next) => {
     const { id } = req.params
     const { name, category } = req.body
     try {
@@ -45,12 +41,11 @@ export const updateEquipment = async (req, res) => {
         }
         res.json({ message: "Attrezzo aggiornato con successo" })
     } catch (error) {
-        res.status(500).json({ message: "Errore durante la modifica", error: error.message })
+        next(error)
     }
 }
 
-// elimina attrezzo
-export const deleteEquipment = async (req, res) => {
+export const deleteEquipment = async (req, res, next) => {
     const { id } = req.params
     try {
         const deleted = await Equipment.delete(id)
@@ -59,6 +54,6 @@ export const deleteEquipment = async (req, res) => {
         }
         res.json({ message: "Attrezzo eliminato dal catalogo con successo" })
     } catch (error) {
-        res.status(500).json({ message: "Errore durante l'eliminazione", error: error.message })
+        next(error)
     }
 }

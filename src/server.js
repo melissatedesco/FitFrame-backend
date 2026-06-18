@@ -1,20 +1,42 @@
 import express, { json } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import 'dotenv/config';
 import db from './config/db.js';
 
-import authRoutes from './routes/authRoutes.js';
-import userRoutes from './routes/userRoutes.js';
-import equipmentRoutes from './routes/equipmentRoutes.js';
+import authRoutes         from './routes/authRoutes.js';
+import userRoutes         from './routes/userRoutes.js';
+import equipmentRoutes    from './routes/equipmentRoutes.js';
+import exerciseRoutes     from './routes/exerciseRoutes.js';
+import programRoutes      from './routes/programRoutes.js';
+import sessionRoutes      from './routes/sessionRoutes.js';
+import trainerRoutes      from './routes/trainerRoutes.js';
+import subscriptionRoutes from './routes/subscriptionRoutes.js';
+import { notFound, errorHandler } from './middlewares/errorMiddleware.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(helmet());
+
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173').split(',')
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) callback(null, true)
+        else callback(new Error('Origine non autorizzata dal CORS.'))
+    },
+    credentials: true
+}));
+
+// Il webhook Stripe va registrato PRIMA del json() middleware
+// perché richiede il body grezzo (raw buffer)
+app.use('/api/subscriptions', subscriptionRoutes);
+
 app.use(json());
 
 app.use((req, res, next) => {
-    console.log(`📡 Richiesta ricevuta! Metodo: ${req.method} - URL: ${req.url}`);
+    // logga solo metodo e path, mai query string (potrebbe contenere token)
+    console.log(`📡 ${req.method} ${req.path}`);
     next();
 });
 
@@ -22,9 +44,16 @@ app.get('/', (req, res) => {
     res.json({ message: "Benvenuto nell'APP di FitFrame! Il Coach virtuale è attivo 🏋️‍♂️" });
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/auth',      authRoutes);
+app.use('/api/users',     userRoutes);
 app.use('/api/equipment', equipmentRoutes);
+app.use('/api/exercises', exerciseRoutes);
+app.use('/api/programs',  programRoutes);
+app.use('/api/sessions',  sessionRoutes);
+app.use('/api/trainer',   trainerRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
 
 app.listen(PORT, () => {
     console.log(`✅ Server in esecuzione sulla porta ${PORT}`);
