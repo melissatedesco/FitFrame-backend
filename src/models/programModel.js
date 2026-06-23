@@ -7,7 +7,7 @@ const Program = {
     // con attrezzi che l'utente non possiede (UC-3)
     getAll: async (userId, filterByEquipment = false) => {
         let query = `
-            SELECT id, name, description,
+            SELECT id, name, description, difficulty, duration_weeks, sessions_per_week,
                    CASE WHEN user_id IS NULL THEN 'sistema' ELSE 'personale' END AS tipo
             FROM programs
             WHERE user_id IS NULL OR user_id = ?
@@ -36,7 +36,7 @@ const Program = {
     // dettaglio scheda con lista esercizi ordinati (RF-S3, S4)
     findById: async (id) => {
         const [[program]] = await db.execute(
-            'SELECT id, name, description, user_id FROM programs WHERE id = ?',
+            'SELECT id, name, description, user_id, difficulty, duration_weeks, sessions_per_week FROM programs WHERE id = ?',
             [id]
         )
         if (!program) return null
@@ -54,18 +54,23 @@ const Program = {
         return { ...program, exercises }
     },
 
-    create: async (name, description, userId) => {
+    create: async (name, description, userId, { difficulty, duration_weeks, sessions_per_week } = {}) => {
         const [result] = await db.execute(
-            'INSERT INTO programs (name, description, user_id) VALUES (?, ?, ?)',
-            [name, description ?? null, userId ?? null]
+            `INSERT INTO programs (name, description, user_id, difficulty, duration_weeks, sessions_per_week)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [name, description ?? null, userId ?? null,
+             difficulty ?? null, duration_weeks ?? null, sessions_per_week ?? null]
         )
         return result.insertId
     },
 
-    update: async (id, name, description) => {
+    update: async (id, name, description, { difficulty, duration_weeks, sessions_per_week } = {}) => {
         const [result] = await db.execute(
-            'UPDATE programs SET name = ?, description = ? WHERE id = ?',
-            [name, description ?? null, id]
+            `UPDATE programs SET name = ?, description = ?,
+             difficulty = ?, duration_weeks = ?, sessions_per_week = ?
+             WHERE id = ?`,
+            [name, description ?? null,
+             difficulty ?? null, duration_weeks ?? null, sessions_per_week ?? null, id]
         )
         return result.affectedRows > 0
     },

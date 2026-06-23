@@ -31,11 +31,11 @@ export const getProgramById = async (req, res, next) => {
 
 // POST /api/programs — crea scheda personale (RF-S2)
 export const createProgram = async (req, res, next) => {
-    const { name, description } = req.body
+    const { name, description, difficulty, duration_weeks, sessions_per_week } = req.body
     // gli admin possono creare schede di sistema passando user_id: null
     const userId = req.user.role === 'admin' ? (req.body.user_id ?? req.user.id) : req.user.id
     try {
-        const id = await Program.create(name, description, userId)
+        const id = await Program.create(name, description, userId, { difficulty, duration_weeks, sessions_per_week })
         res.status(201).json({ message: 'Scheda creata con successo.', id })
     } catch (error) {
         next(error)
@@ -44,13 +44,13 @@ export const createProgram = async (req, res, next) => {
 
 // PUT /api/programs/:id — modifica scheda (RF-S5)
 export const updateProgram = async (req, res, next) => {
-    const { name, description } = req.body
+    const { name, description, difficulty, duration_weeks, sessions_per_week } = req.body
     try {
         const isOwner = await Program.isOwner(req.params.id, req.user.id)
         if (!isOwner && req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Non puoi modificare questa scheda.' })
         }
-        const updated = await Program.update(req.params.id, name, description)
+        const updated = await Program.update(req.params.id, name, description, { difficulty, duration_weeks, sessions_per_week })
         if (!updated) {
             return res.status(404).json({ message: 'Scheda non trovata.' })
         }
