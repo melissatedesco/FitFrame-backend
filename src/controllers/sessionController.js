@@ -15,11 +15,13 @@ export const startSession = async (req, res, next) => {
 // PATCH /api/sessions/:id/close — chiude la sessione (RF-P1)
 export const closeSession = async (req, res, next) => {
     try {
-        const endedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
-        const closed = await Session.close(req.params.id, endedAt)
-        if (!closed) {
-            return res.status(404).json({ message: 'Sessione non trovata.' })
+        const session = await Session.findById(req.params.id)
+        if (!session) return res.status(404).json({ message: 'Sessione non trovata.' })
+        if (session.user_id !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Non sei autorizzato a chiudere questa sessione.' })
         }
+        const endedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
+        await Session.close(req.params.id, endedAt)
         res.json({ message: 'Sessione completata.' })
     } catch (error) {
         next(error)
@@ -59,6 +61,11 @@ export const logExercise = async (req, res, next) => {
         return res.status(400).json({ message: 'exercise_id, sets_done e reps_done sono obbligatori.' })
     }
     try {
+        const session = await Session.findById(req.params.id)
+        if (!session) return res.status(404).json({ message: 'Sessione non trovata.' })
+        if (session.user_id !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Non sei autorizzato a modificare questa sessione.' })
+        }
         const id = await Session.addExercise(req.params.id, exercise_id, sets_done, reps_done, form_score)
         res.status(201).json({ message: 'Esercizio registrato.', id })
     } catch (error) {

@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     surname VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    role ENUM('user', 'admin') DEFAULT 'user',
+    role ENUM('user', 'trainer', 'admin') DEFAULT 'user',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -71,6 +71,9 @@ CREATE TABLE IF NOT EXISTS programs (
     name VARCHAR(150) NOT NULL,
     description TEXT,
     user_id INT,                          -- NULL = scheda predefinita di sistema
+    difficulty ENUM('principiante', 'intermedio', 'avanzato') DEFAULT NULL,
+    duration_weeks TINYINT UNSIGNED DEFAULT NULL,
+    sessions_per_week TINYINT UNSIGNED DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -111,6 +114,30 @@ CREATE TABLE IF NOT EXISTS session_exercises (
     form_score TINYINT UNSIGNED,          -- 0-100, qualità forma rilevata dal coach
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
     FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
+);
+
+-- Relazione trainer ↔ cliente (RF-CL1…CL4)
+CREATE TABLE IF NOT EXISTS trainer_clients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    trainer_id INT NOT NULL,
+    client_id INT NOT NULL,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_trainer_client (trainer_id, client_id),
+    FOREIGN KEY (trainer_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (client_id)  REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Assegnazione schede ai clienti da parte del trainer (RF-CL3)
+CREATE TABLE IF NOT EXISTS program_assignments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    program_id INT NOT NULL,
+    client_id INT NOT NULL,
+    trainer_id INT NOT NULL,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_program_client (program_id, client_id),
+    FOREIGN KEY (program_id)  REFERENCES programs(id) ON DELETE CASCADE,
+    FOREIGN KEY (client_id)   REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (trainer_id)  REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Token per il reset della password (RF-A5)

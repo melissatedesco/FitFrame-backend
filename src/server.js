@@ -11,7 +11,6 @@ import exerciseRoutes     from './routes/exerciseRoutes.js';
 import programRoutes      from './routes/programRoutes.js';
 import sessionRoutes      from './routes/sessionRoutes.js';
 import trainerRoutes      from './routes/trainerRoutes.js';
-import subscriptionRoutes from './routes/subscriptionRoutes.js';
 import { notFound, errorHandler } from './middlewares/errorMiddleware.js';
 
 const app = express();
@@ -27,10 +26,6 @@ app.use(cors({
     },
     credentials: true
 }));
-
-// Il webhook Stripe va registrato PRIMA del json() middleware
-// perché richiede il body grezzo (raw buffer)
-app.use('/api/subscriptions', subscriptionRoutes);
 
 app.use(json());
 
